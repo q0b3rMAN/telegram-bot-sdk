@@ -192,6 +192,16 @@ class CommandBus extends AnswerBus
             ?? $this->commands['help']
             ?? collect($this->commands)->first(fn ($command): bool => $command instanceof $name);
 
+        /**
+         * Try to find by regex aliases.
+         */
+        if(empty($command) && !empty($this->commandAliases)) {
+            foreach ($this->commandAliases as $alias => $alias_command) {
+                if(str_starts_with($alias, '/') && preg_match($alias, $name) !== false) {
+                    $command = $alias_command;
+                }
+            }
+        }
         return $command?->make($this->telegram, $update, $entity) ?? false;
     }
 
